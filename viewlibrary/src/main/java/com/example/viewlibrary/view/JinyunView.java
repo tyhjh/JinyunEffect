@@ -38,7 +38,7 @@ public class JinyunView extends SurfaceView implements SurfaceHolder.Callback, R
     private static List<Triangle> triangleList = new ArrayList<>();
 
     private SurfaceHolder mSurfaceHolder;
-    private Canvas mCanvas;
+
     private boolean mIsDrawing;
     private int mPaintColor = Color.parseColor("#cabfa3");
 
@@ -70,7 +70,6 @@ public class JinyunView extends SurfaceView implements SurfaceHolder.Callback, R
         setZOrderOnTop(true);
         getHolder().setFormat(PixelFormat.TRANSLUCENT);
         mIsDrawing = true;
-        //开启子线程
         new Thread(this).start();
     }
 
@@ -93,6 +92,7 @@ public class JinyunView extends SurfaceView implements SurfaceHolder.Callback, R
 
 
     private void drawSomething() {
+        Canvas mCanvas=null;
         try {
             Thread.sleep(refreshTime);
             mCanvas = mSurfaceHolder.lockCanvas();
@@ -161,9 +161,9 @@ public class JinyunView extends SurfaceView implements SurfaceHolder.Callback, R
         if (distence < getWidth() * (1.5 / 5)) {
             return 0;
         } else {
-            double alpha=((-1275 / (2 * (double)getWidth())) * distence + 1275 / 2)-280;
-            if(alpha<0){
-                alpha=0;
+            double alpha = ((-1275 / (2 * (double) getWidth())) * distence + 1275 / 2) - 280;
+            if (alpha < 0) {
+                alpha = 0;
             }
             return (int) alpha;
         }
