@@ -12,6 +12,8 @@ public class Triangle {
     public Point topPoint1, topPoint2, topPoint3;
     public int moveAngle;
 
+    public static int moveAnglePre;
+
     public Triangle(Point topPoint1, Point topPoint2, Point topPoint3) {
         this.topPoint1 = topPoint1;
         this.topPoint2 = topPoint2;
@@ -20,10 +22,16 @@ public class Triangle {
     }
 
     private int getMoveAngel() {
-        int moveAngle = 180 - random.nextInt(360);
+        int moveAngle = 180 - new Random(System.currentTimeMillis()*System.currentTimeMillis()).nextInt(360);
         if (moveAngle == 0 || moveAngle == 90 || moveAngle == 180 || moveAngle == -90 || moveAngle == -180) {
             return getMoveAngel();
         }
+
+        if(Math.abs(moveAnglePre - moveAngle) < 30){
+            return getMoveAngel();
+        }
+
+        moveAnglePre = moveAngle;
         return moveAngle;
     }
 
@@ -82,9 +90,9 @@ public class Triangle {
 
 
     public static boolean isTriangle(Triangle triangle) {
-        double a = Math.sqrt((triangle.topPoint1.x - triangle.topPoint2.x) * (triangle.topPoint1.y - triangle.topPoint2.y));
-        double b = Math.sqrt((triangle.topPoint1.x - triangle.topPoint3.x) * (triangle.topPoint1.y - triangle.topPoint3.y));
-        double c = Math.sqrt((triangle.topPoint2.x - triangle.topPoint3.x) * (triangle.topPoint2.y - triangle.topPoint3.y));
+        double a = Math.sqrt(Math.pow((triangle.topPoint1.x - triangle.topPoint2.x),2) + Math.pow((triangle.topPoint1.y - triangle.topPoint2.y),2));
+        double b = Math.sqrt(Math.pow((triangle.topPoint1.x - triangle.topPoint3.x),2) + Math.pow((triangle.topPoint1.y - triangle.topPoint3.y),2));
+        double c = Math.sqrt(Math.pow((triangle.topPoint2.x - triangle.topPoint3.x),2) + Math.pow((triangle.topPoint2.y - triangle.topPoint3.y),2));
         if (a + b <= c + triangleSize / 10 || a + c <= b + triangleSize / 10 || b + c <= a + triangleSize / 10) {
             return false;
         }

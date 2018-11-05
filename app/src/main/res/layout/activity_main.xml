@@ -11,7 +11,6 @@
         android:layout_height="match_parent"
         android:scaleType="centerCrop" />
 
-
     <LinearLayout
         android:layout_centerInParent="true"
         android:gravity="center"
@@ -41,7 +40,7 @@
 
     <LinearLayout
         android:background="#1f000000"
-        android:elevation="3dp"
+        android:elevation="1dp"
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="match_parent">

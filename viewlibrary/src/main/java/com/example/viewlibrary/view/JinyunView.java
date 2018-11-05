@@ -21,20 +21,26 @@ import java.util.List;
 public class JinyunView extends SurfaceView implements SurfaceHolder.Callback, Runnable {
 
     //三角形移动速度
-    private double moveSpeed = 1;
+    private double moveSpeed = 0.4;
 
     //刷新时间
-    private static int refreshTime = 50;
+    private static int refreshTime = 20;
 
-    //每次添加的三角形数量
-    private int addTriangleCount = 2;
+    //添加两次三角形的间隔
+    private static int addTriangleInterval = 100;
+
+    //每次添加的数量限制
+    private static int addTriangleOnece = 2;
+
+    //总三角形数量
+    private int allTriangleCount = 100;
     //所有的三角形
     private static List<Triangle> triangleList = new ArrayList<>();
 
     private SurfaceHolder mSurfaceHolder;
     private Canvas mCanvas;
     private boolean mIsDrawing;
-    private int mPaintColor = Color.BLACK;
+    private int mPaintColor = Color.parseColor("#cabfa3");
 
     public JinyunView(Context context) {
         super(context);
@@ -91,7 +97,6 @@ public class JinyunView extends SurfaceView implements SurfaceHolder.Callback, R
             Thread.sleep(refreshTime);
             mCanvas = mSurfaceHolder.lockCanvas();
             mCanvas.drawColor(0, PorterDuff.Mode.CLEAR);
-            drawTriangle(mCanvas,Triangle.getRandomTriangle(getWidth()/2,getHeight()/2),mPaintColor);
             manageTriangle((int) (refreshTime * moveSpeed));
             for (Triangle triangle : triangleList) {
                 drawTriangle(mCanvas, triangle, mPaintColor);
@@ -105,6 +110,9 @@ public class JinyunView extends SurfaceView implements SurfaceHolder.Callback, R
         }
     }
 
+    private static Long startTime = System.currentTimeMillis();
+
+
     private void manageTriangle(int distence) {
 
         Iterator iter = triangleList.iterator();
@@ -116,9 +124,14 @@ public class JinyunView extends SurfaceView implements SurfaceHolder.Callback, R
             }
         }
 
-        for (int i = 0; i < addTriangleCount; i++) {
-            triangleList.add(Triangle.getRandomTriangle(getWidth() / 2, getHeight() / 2));
+        if (System.currentTimeMillis() - startTime > addTriangleInterval && triangleList.size() < allTriangleCount) {
+            for (int i = 0; i < addTriangleOnece; i++) {
+                triangleList.add(Triangle.getRandomTriangle(getWidth() / 2, getHeight() / 2));
+            }
+            startTime = System.currentTimeMillis();
         }
+
+
     }
 
 
@@ -139,12 +152,22 @@ public class JinyunView extends SurfaceView implements SurfaceHolder.Callback, R
     }
 
     public int getAlpha(Triangle triangle) {
-        double distence = Math.sqrt((triangle.topPoint1.x - getWidth() / 2) * (triangle.topPoint1.y - getHeight() / 2));
-        if (distence > getWidth() / 3) {
+        double distence= Math.sqrt(Math.pow((triangle.topPoint1.x - getWidth() / 2),2) + Math.pow((triangle.topPoint1.y - getHeight() / 2),2));
+        double distence2 = Math.sqrt(Math.pow((triangle.topPoint1.x - getWidth() / 2),2) + Math.pow((triangle.topPoint1.y - getHeight() / 2),2));
+        double distence3 = Math.sqrt(Math.pow((triangle.topPoint1.x - getWidth() / 2),2) + Math.pow((triangle.topPoint1.y - getHeight() / 2),2));
+
+
+        if(distence<getWidth() / 3.3333){
+            return 0;
+        }else {
+            return 255;
+        }
+
+       /* if (distence > getWidth() / 3) {
             return (int) ((255 * getWidth() / 3) / distence);
         } else {
             return 255;
-        }
+        }*/
     }
 
 
