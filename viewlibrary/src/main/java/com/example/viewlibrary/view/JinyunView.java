@@ -1,30 +1,21 @@
-package com.example.dhht.jinyuneffect.view;
+package com.example.viewlibrary.view;
 
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.PixelFormat;
-import android.graphics.Point;
 import android.graphics.PorterDuff;
 import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
-import com.example.dhht.jinyuneffect.R;
-
-import java.util.Random;
 
 public class JinyunView extends SurfaceView implements SurfaceHolder.Callback, Runnable {
 
     private SurfaceHolder mSurfaceHolder;
     private Canvas mCanvas;
     private boolean mIsDrawing;
-    private Bitmap bitmap;
     Paint paint = new Paint();
 
 
@@ -49,7 +40,6 @@ public class JinyunView extends SurfaceView implements SurfaceHolder.Callback, R
         setFocusable(true);
         setKeepScreenOn(true);
         setFocusableInTouchMode(true);
-        bitmap = BitmapFactory.decodeResource(getResources(), R.mipmap.bg);
     }
 
     @Override
@@ -74,7 +64,7 @@ public class JinyunView extends SurfaceView implements SurfaceHolder.Callback, R
     @Override
     public void run() {
         while (mIsDrawing) {
-            //drawSomething();
+            drawSomething();
         }
     }
 
@@ -83,10 +73,7 @@ public class JinyunView extends SurfaceView implements SurfaceHolder.Callback, R
         try {
             mCanvas = mSurfaceHolder.lockCanvas(new Rect(0, 0, 200, 200));
             mCanvas.drawColor(0, PorterDuff.Mode.CLEAR);
-            Rect rectBitmap = new Rect(0, 0, bitmap.getWidth(), bitmap.getHeight());
-            Rect rectSurface = mSurfaceHolder.getSurfaceFrame();
-            //centerCrop(rectBitmap, rectSurface);
-            //mCanvas.drawBitmap(bitmap, rectBitmap, rectSurface, paint);
+
         } catch (Exception e) {
 
         } finally {
