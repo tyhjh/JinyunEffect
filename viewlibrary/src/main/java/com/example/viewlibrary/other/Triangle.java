@@ -1,0 +1,96 @@
+package com.example.viewlibrary.other;
+
+import android.graphics.Point;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+
+public class Triangle {
+
+    public static int triangleSize = 60;
+    public Point topPoint1, topPoint2, topPoint3;
+    public int moveAngle;
+
+    public Triangle(Point topPoint1, Point topPoint2, Point topPoint3) {
+        this.topPoint1 = topPoint1;
+        this.topPoint2 = topPoint2;
+        this.topPoint3 = topPoint3;
+        moveAngle = getMoveAngel();
+    }
+
+    private int getMoveAngel() {
+        int moveAngle = 180 - random.nextInt(360);
+        if (moveAngle == 0 || moveAngle == 90 || moveAngle == 180 || moveAngle == -90 || moveAngle == -180) {
+            return getMoveAngel();
+        }
+        return moveAngle;
+    }
+
+
+    public void move(int distance) {
+        int moveX, moveY;
+        moveY = (int) (Math.sin(moveAngle) * distance);
+        moveX = (int) (Math.cos(moveAngle) * distance);
+        move(this, moveX, moveY);
+    }
+
+
+    public boolean isOut(int width, int height) {
+        return false;
+    }
+
+
+    public static Random random = new Random(System.currentTimeMillis());
+    public static List<Point> pointList = new ArrayList<>();
+
+
+    public static Triangle getRandomTriangle(int startX, int startY) {
+        pointList.clear();
+        for (int i = -triangleSize; i <= triangleSize; i = i + 2) {
+            for (int k = -triangleSize; k < triangleSize; k = k + 2) {
+                pointList.add(new Point(i, k));
+            }
+        }
+        Triangle triangle = null;
+        Point topPoint1, topPoint2, topPoint3;
+        topPoint1 = pointList.get(random.nextInt(triangleSize * triangleSize));
+        topPoint2 = pointList.get(random.nextInt(triangleSize * triangleSize));
+        topPoint3 = pointList.get(random.nextInt(triangleSize * triangleSize));
+        triangle = new Triangle(topPoint1, topPoint2, topPoint3);
+        move(triangle, startX, startY);
+        if (isTriangle(triangle)) {
+            return triangle;
+        } else {
+            return getRandomTriangle(startX, startY);
+        }
+    }
+
+
+    public static void move(Triangle triangle, int x, int y) {
+        triangle.topPoint1.x += x;
+        triangle.topPoint2.x += x;
+        triangle.topPoint2.x += x;
+        triangle.topPoint1.y += y;
+        triangle.topPoint2.y += y;
+        triangle.topPoint3.y += y;
+
+    }
+
+
+    public static boolean isTriangle(Triangle triangle) {
+        double a = Math.sqrt((triangle.topPoint1.x - triangle.topPoint2.x) * (triangle.topPoint1.y - triangle.topPoint2.y));
+        double b = Math.sqrt((triangle.topPoint1.x - triangle.topPoint3.x) * (triangle.topPoint1.y - triangle.topPoint3.y));
+        double c = Math.sqrt((triangle.topPoint2.x - triangle.topPoint3.x) * (triangle.topPoint2.y - triangle.topPoint3.y));
+        if (a + b <= c + triangleSize / 10 || a + c <= b + triangleSize / 10 || b + c <= a + triangleSize / 10) {
+            return false;
+        }
+        if (a <= triangleSize / 10 || b <= triangleSize / 10 || c <= triangleSize / 10) {
+            return false;
+        }
+
+        return true;
+    }
+
+
+}

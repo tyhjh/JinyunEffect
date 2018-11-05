@@ -40,7 +40,8 @@
     </LinearLayout>
 
     <LinearLayout
-        android:elevation="1dp"
+        android:background="#1f000000"
+        android:elevation="3dp"
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="match_parent">

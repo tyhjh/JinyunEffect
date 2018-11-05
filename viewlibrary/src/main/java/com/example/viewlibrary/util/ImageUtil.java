@@ -1,6 +1,7 @@
 package com.example.viewlibrary.util;
 
 import android.graphics.Bitmap;
+import android.graphics.Rect;
 import android.media.MediaMetadataRetriever;
 import android.media.ThumbnailUtils;
 import android.os.Build;
@@ -81,6 +82,31 @@ public class ImageUtil {
                 }
             };
         }
+    }
+
+
+
+    /**
+     * 裁剪图片
+     *
+     * @param rectBitmap
+     * @param rectSurface
+     */
+    public static void centerCrop(Rect rectBitmap, Rect rectSurface) {
+        int verticalTimes = rectBitmap.height() / rectSurface.height();
+        int horizontalTimes = rectBitmap.width() / rectSurface.width();
+        if (verticalTimes > horizontalTimes) {
+            rectBitmap.left = 0;
+            rectBitmap.right = rectBitmap.right;
+            rectBitmap.top = (rectBitmap.height() - (rectSurface.height() * rectBitmap.width() / rectSurface.width())) / 2;
+            rectBitmap.bottom = rectBitmap.bottom - rectBitmap.top;
+        } else {
+            rectBitmap.top = 0;
+            rectBitmap.bottom = rectBitmap.bottom;
+            rectBitmap.left = (rectBitmap.width() - (rectSurface.width() * rectBitmap.height() / rectSurface.height())) / 2;
+            rectBitmap.right = rectBitmap.right - rectBitmap.left;
+        }
+
     }
 
 

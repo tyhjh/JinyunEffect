@@ -5,15 +5,12 @@ import android.animation.ValueAnimator;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Build;
+import android.os.Bundle;
 import android.support.annotation.RequiresApi;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
-
-import android.util.Log;
 import android.view.WindowManager;
 import android.view.animation.LinearInterpolator;
 import android.widget.ImageView;
-import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.example.viewlibrary.util.BlurUtil;
@@ -48,11 +45,10 @@ public class MainActivity extends AppCompatActivity {
         objectAnimator.start();
 
         iv_bg = findViewById(R.id.iv_bg);
-        Glide.with(MainActivity.this).load(R.mipmap.bg).into(iv_bg);
         new Thread(new Runnable() {
             @Override
             public void run() {
-                bitmap = BlurUtil.doBlur(BitmapFactory.decodeResource(getResources(), R.mipmap.bg), 90, 30);
+                bitmap = BlurUtil.doBlur(BitmapFactory.decodeResource(getResources(), R.mipmap.ic_show), 10, 30);
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
