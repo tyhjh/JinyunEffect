@@ -37,6 +37,9 @@ public class Triangle {
 
 
     public boolean isOut(int width, int height) {
+        if (topPoint1.x <= 0 || topPoint1.y <= 0 || topPoint1.x >= width || topPoint1.y >= height) {
+            return true;
+        }
         return false;
     }
 
@@ -70,7 +73,7 @@ public class Triangle {
     public static void move(Triangle triangle, int x, int y) {
         triangle.topPoint1.x += x;
         triangle.topPoint2.x += x;
-        triangle.topPoint2.x += x;
+        triangle.topPoint3.x += x;
         triangle.topPoint1.y += y;
         triangle.topPoint2.y += y;
         triangle.topPoint3.y += y;

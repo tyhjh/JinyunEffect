@@ -91,6 +91,7 @@ public class JinyunView extends SurfaceView implements SurfaceHolder.Callback, R
             Thread.sleep(refreshTime);
             mCanvas = mSurfaceHolder.lockCanvas();
             mCanvas.drawColor(0, PorterDuff.Mode.CLEAR);
+            drawTriangle(mCanvas,Triangle.getRandomTriangle(getWidth()/2,getHeight()/2),mPaintColor);
             manageTriangle((int) (refreshTime * moveSpeed));
             for (Triangle triangle : triangleList) {
                 drawTriangle(mCanvas, triangle, mPaintColor);
@@ -110,7 +111,9 @@ public class JinyunView extends SurfaceView implements SurfaceHolder.Callback, R
         while (iter.hasNext()) {
             Triangle triangle = (Triangle) iter.next();
             triangle.move(distence);
-
+            if (triangle.isOut(getWidth(), getHeight())) {
+                iter.remove();
+            }
         }
 
         for (int i = 0; i < addTriangleCount; i++) {
