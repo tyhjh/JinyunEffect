@@ -152,19 +152,24 @@ public class JinyunView extends SurfaceView implements SurfaceHolder.Callback, R
     }
 
     public int getAlpha(Triangle triangle) {
-        double distence= Math.sqrt(Math.pow((triangle.topPoint1.x - getWidth() / 2),2) + Math.pow((triangle.topPoint1.y - getHeight() / 2),2));
-        double distence2 = Math.sqrt(Math.pow((triangle.topPoint1.x - getWidth() / 2),2) + Math.pow((triangle.topPoint1.y - getHeight() / 2),2));
-        double distence3 = Math.sqrt(Math.pow((triangle.topPoint1.x - getWidth() / 2),2) + Math.pow((triangle.topPoint1.y - getHeight() / 2),2));
+        double distence1 = Math.sqrt(Math.pow((triangle.topPoint1.x - getWidth() / 2), 2) + Math.pow((triangle.topPoint1.y - getHeight() / 2), 2));
+        double distence2 = Math.sqrt(Math.pow((triangle.topPoint2.x - getWidth() / 2), 2) + Math.pow((triangle.topPoint2.y - getHeight() / 2), 2));
+        double distence3 = Math.sqrt(Math.pow((triangle.topPoint3.x - getWidth() / 2), 2) + Math.pow((triangle.topPoint3.y - getHeight() / 2), 2));
 
+        double distence = Math.max(Math.max(distence1, distence2), distence3);
 
-        if(distence<getWidth() / 3.3333){
+        if (distence < getWidth() * (1.5 / 5)) {
             return 0;
-        }else {
-            return 255;
+        } else {
+            double alpha=((-1275 / (2 * (double)getWidth())) * distence + 1275 / 2)-280;
+            if(alpha<0){
+                alpha=0;
+            }
+            return (int) alpha;
         }
 
        /* if (distence > getWidth() / 3) {
-            return (int) ((255 * getWidth() / 3) / distence);
+
         } else {
             return 255;
         }*/
