@@ -37,6 +37,8 @@ public class MainActivity extends AppCompatActivity {
         Glide.with(MainActivity.this).load(R.mipmap.ic_show).into(ivShowPic);
         ivShowPic.setClipToOutline(true);
         ivShowPic.setOutlineProvider(ImageUtil.getOutline(true, 20, 1));
+
+
         objectAnimator = ObjectAnimator.ofFloat(ivShowPic, "rotation", 0f, 360f);
         objectAnimator.setDuration(20 * 1000);
         objectAnimator.setRepeatMode(ValueAnimator.RESTART);
