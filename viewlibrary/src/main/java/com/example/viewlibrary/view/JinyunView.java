@@ -11,12 +11,11 @@ import android.graphics.Point;
 import android.graphics.PorterDuff;
 import android.os.SystemClock;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
+import com.example.viewlibrary.other.CirclePoint;
 import com.example.viewlibrary.other.Triangle;
-import com.example.viewlibrary.util.ImageUtil;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -44,7 +43,13 @@ public class JinyunView extends SurfaceView implements SurfaceHolder.Callback, R
 
 
     //圆的坐标点
-    private ArrayList<Point> circlePointList = new ArrayList<>();
+    private ArrayList<CirclePoint> circlePointList = new ArrayList<>();
+    //两点之间画贝塞尔曲线的一个值
+    private double bezierDistance;
+
+    private double towPointMargin;
+
+    private int mCircleR;
     private int mCircleLineMargin;
 
 
@@ -57,7 +62,7 @@ public class JinyunView extends SurfaceView implements SurfaceHolder.Callback, R
 
     public void setBitmapBg(Bitmap bitmapBg) {
         this.bitmapBg = bitmapBg;
-        mPaintColor = ImageUtil.getColor(bitmapBg, 0).getRgb();
+        //mPaintColor = ImageUtil.getColor(bitmapBg, 4).getRgb();
     }
 
     public JinyunView(Context context) {
@@ -86,39 +91,22 @@ public class JinyunView extends SurfaceView implements SurfaceHolder.Callback, R
     @Override
     public void surfaceCreated(SurfaceHolder surfaceHolder) {
         mIsDrawing = true;
+        mCircleR = getWidth() / 2 - (getWidth() / 6);
+        bezierDistance = (1 - Math.cos(Math.toRadians(1))) * mCircleR;
+        towPointMargin = 2 * Math.sin(Math.toRadians(1)) * mCircleR;
         getHolder().setFormat(PixelFormat.TRANSLUCENT);
-        getCirclePoint(getWidth() / 2 - (getWidth() / 7), getWidth() / 2, getHeight() / 2);
+        getCirclePoint(mCircleR, getWidth() / 2, getHeight() / 2);
         //setZOrderOnTop(true);
         new Thread(this).start();
     }
 
 
     //获取圆周点坐标
-    private void getCirclePoint(int circleR, double circleX, double circleY) {
+    private void getCirclePoint(double circleR, double circleX, double circleY) {
         circlePointList.clear();
         for (int i = -180; i < 180; i = i + 2) {
-            double x = 0, y = 0;
-            if (i == -180) {
-                x = -circleR;
-                y = 0;
-            } else if (i == -90) {
-                x = 0;
-                y = -circleR;
-            } else if (i == 0) {
-                x = circleR;
-                y = 0;
-            } else if (i == 90) {
-                x = 0;
-                y = circleR;
-            } else {
-                y = (Math.sin(i) * circleR);
-                x = (Math.cos(i) * circleR);
-            }
-            Log.e("获取圆周点坐标", "x：" + x + "，y：" + y + "，angle：" + i);
-
-            circlePointList.add(new Point((int) x + (int) circleX, (int) y + (int) circleY));
+            circlePointList.add(new CirclePoint(i, circleR, circleX, circleY));
         }
-
     }
 
 
@@ -169,10 +157,28 @@ public class JinyunView extends SurfaceView implements SurfaceHolder.Callback, R
         Paint paint = new Paint();
         paint.setAntiAlias(true);
         paint.setColor(mPaintColor);
-        paint.setStrokeWidth(6);
+        paint.setStyle(Paint.Style.STROKE);
+        paint.setStrokeWidth(5);
+
         for (int i = 0; i < size; i++) {
-            Point point = circlePointList.get(i);
-            canvas.drawPoint(point.x, point.y, paint);
+            CirclePoint point = circlePointList.get(i);
+            CirclePoint next;
+            if (i < size - 1) {
+                next = circlePointList.get(i + 1);
+            } else {
+                next = circlePointList.get(0);
+            }
+
+
+            Path path = new Path();
+            path.moveTo(point.x, point.y);
+            Point bezierPoint = point.getBezierPoint();
+            path.quadTo(bezierPoint.x, bezierPoint.y, next.x, next.y);
+            canvas.drawPath(path, paint);
+
+            path.reset();
+            path.moveTo(point.x2, point.y2);
+
         }
     }
 
@@ -253,5 +259,7 @@ public class JinyunView extends SurfaceView implements SurfaceHolder.Callback, R
         }*/
     }
 
-
+    public void setmPaintColor(int mPaintColor) {
+        this.mPaintColor = mPaintColor;
+    }
 }

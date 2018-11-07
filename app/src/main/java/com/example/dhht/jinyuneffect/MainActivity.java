@@ -4,9 +4,12 @@ import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.ColorMatrix;
+import android.graphics.ColorMatrixColorFilter;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.SystemClock;
+import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
 import android.support.v7.app.AppCompatActivity;
 import android.view.WindowManager;
@@ -14,6 +17,10 @@ import android.view.animation.LinearInterpolator;
 import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.DataSource;
+import com.bumptech.glide.load.engine.GlideException;
+import com.bumptech.glide.request.RequestListener;
+import com.bumptech.glide.request.target.Target;
 import com.example.viewlibrary.util.BlurUtil;
 import com.example.viewlibrary.util.ImageUtil;
 import com.example.viewlibrary.view.JinyunView;
@@ -37,11 +44,26 @@ public class MainActivity extends AppCompatActivity {
 
     private void initView() {
         jinyunView = findViewById(R.id.sv_bg);
+        iv_bg = findViewById(R.id.iv_bg);
+
         ivShowPic = findViewById(R.id.ivShowPic);
-        Glide.with(MainActivity.this).load(R.mipmap.ic_show).into(ivShowPic);
+        Glide.with(MainActivity.this).asBitmap().addListener(new RequestListener<Bitmap>() {
+            @Override
+            public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Bitmap> target, boolean isFirstResource) {
+                return false;
+            }
+
+            @Override
+            public boolean onResourceReady(Bitmap resource, Object model, Target<Bitmap> target, DataSource dataSource, boolean isFirstResource) {
+                jinyunView.setmPaintColor(ImageUtil.getColor(resource, 3).getRgb());
+                return false;
+            }
+        }).load(R.mipmap.ic_show).into(ivShowPic);
+
+
+
         ivShowPic.setClipToOutline(true);
         ivShowPic.setOutlineProvider(ImageUtil.getOutline(true, 20, 1));
-
 
         objectAnimator = ObjectAnimator.ofFloat(ivShowPic, "rotation", 0f, 360f);
         objectAnimator.setDuration(20 * 1000);
@@ -50,7 +72,7 @@ public class MainActivity extends AppCompatActivity {
         objectAnimator.setRepeatCount(-1);
         objectAnimator.start();
 
-        iv_bg = findViewById(R.id.iv_bg);
+
     }
 
 
@@ -59,6 +81,14 @@ public class MainActivity extends AppCompatActivity {
         iv_bg.setImageBitmap(bitmap);
         iv_bg.setDrawingCacheEnabled(true);
         getBitmap();
+
+
+        ColorMatrix colorMatrix = new ColorMatrix();
+        //colorMatrix.setSaturation(0);
+        colorMatrix.setScale(0.5f,0.5f,0.5f,1);
+        ColorMatrixColorFilter colorFilter = new ColorMatrixColorFilter(colorMatrix);
+        iv_bg.setColorFilter(colorFilter);
+
     }
 
     public void getBitmap() {

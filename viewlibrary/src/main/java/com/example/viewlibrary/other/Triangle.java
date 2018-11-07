@@ -38,8 +38,8 @@ public class Triangle {
 
     public void move(int distance) {
         int moveX, moveY;
-        moveY = (int) (Math.sin(moveAngle) * distance);
-        moveX = (int) (Math.cos(moveAngle) * distance);
+        moveY = (int) (Math.sin(Math.toRadians(moveAngle)) * distance);
+        moveX = (int) (Math.cos(Math.toRadians(moveAngle)) * distance);
         move(this, moveX, moveY);
     }
 
