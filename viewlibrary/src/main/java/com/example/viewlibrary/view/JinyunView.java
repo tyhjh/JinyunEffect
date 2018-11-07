@@ -1,17 +1,20 @@
 package com.example.viewlibrary.view;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.PixelFormat;
 import android.graphics.PorterDuff;
+import android.os.SystemClock;
 import android.util.AttributeSet;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
 import com.example.viewlibrary.other.Triangle;
+import com.example.viewlibrary.util.ImageUtil;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -42,6 +45,13 @@ public class JinyunView extends SurfaceView implements SurfaceHolder.Callback, R
     private boolean mIsDrawing;
     private int mPaintColor = Color.parseColor("#cabfa3");
 
+    private Bitmap bitmapBg;
+
+    public void setBitmapBg(Bitmap bitmapBg) {
+        this.bitmapBg = bitmapBg;
+        mPaintColor=ImageUtil.getColor(bitmapBg,0).getRgb();
+    }
+
     public JinyunView(Context context) {
         super(context);
         initView();
@@ -67,9 +77,9 @@ public class JinyunView extends SurfaceView implements SurfaceHolder.Callback, R
 
     @Override
     public void surfaceCreated(SurfaceHolder surfaceHolder) {
-        setZOrderOnTop(true);
-        getHolder().setFormat(PixelFormat.TRANSLUCENT);
         mIsDrawing = true;
+        getHolder().setFormat(PixelFormat.TRANSLUCENT);
+        //setZOrderOnTop(true);
         new Thread(this).start();
     }
 
@@ -92,11 +102,14 @@ public class JinyunView extends SurfaceView implements SurfaceHolder.Callback, R
 
 
     private void drawSomething() {
-        Canvas mCanvas=null;
+        Canvas mCanvas = null;
+        long t = System.currentTimeMillis();
         try {
-            Thread.sleep(refreshTime);
             mCanvas = mSurfaceHolder.lockCanvas();
             mCanvas.drawColor(0, PorterDuff.Mode.CLEAR);
+            if (bitmapBg != null) {
+                mCanvas.drawBitmap(bitmapBg, 0, 0, new Paint());
+            }
             manageTriangle((int) (refreshTime * moveSpeed));
             for (Triangle triangle : triangleList) {
                 drawTriangle(mCanvas, triangle, mPaintColor);
@@ -107,6 +120,7 @@ public class JinyunView extends SurfaceView implements SurfaceHolder.Callback, R
             if (mCanvas != null) {
                 mSurfaceHolder.unlockCanvasAndPost(mCanvas);
             }
+            SystemClock.sleep(Math.max(refreshTime - (System.currentTimeMillis() - t), 0));
         }
     }
 
@@ -118,9 +132,10 @@ public class JinyunView extends SurfaceView implements SurfaceHolder.Callback, R
         Iterator iter = triangleList.iterator();
         while (iter.hasNext()) {
             Triangle triangle = (Triangle) iter.next();
-            triangle.move(distence);
             if (triangle.isOut(getWidth(), getHeight())) {
                 iter.remove();
+            } else {
+                triangle.move(distence);
             }
         }
 
@@ -159,7 +174,7 @@ public class JinyunView extends SurfaceView implements SurfaceHolder.Callback, R
         double distence = Math.max(Math.max(distence1, distence2), distence3);
 
         if (distence < getWidth() * (1.5 / 5)) {
-            return 0;
+            return 255;
         } else {
             double alpha = ((-1275 / (2 * (double) getWidth())) * distence + 1275 / 2) - 280;
             if (alpha < 0) {
