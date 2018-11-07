@@ -7,9 +7,11 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.PixelFormat;
+import android.graphics.Point;
 import android.graphics.PorterDuff;
 import android.os.SystemClock;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
@@ -40,6 +42,12 @@ public class JinyunView extends SurfaceView implements SurfaceHolder.Callback, R
     //所有的三角形
     private static List<Triangle> triangleList = new ArrayList<>();
 
+
+    //圆的坐标点
+    private ArrayList<Point> circlePointList = new ArrayList<>();
+    private int mCircleLineMargin;
+
+
     private SurfaceHolder mSurfaceHolder;
 
     private boolean mIsDrawing;
@@ -49,7 +57,7 @@ public class JinyunView extends SurfaceView implements SurfaceHolder.Callback, R
 
     public void setBitmapBg(Bitmap bitmapBg) {
         this.bitmapBg = bitmapBg;
-        mPaintColor=ImageUtil.getColor(bitmapBg,0).getRgb();
+        mPaintColor = ImageUtil.getColor(bitmapBg, 0).getRgb();
     }
 
     public JinyunView(Context context) {
@@ -79,9 +87,40 @@ public class JinyunView extends SurfaceView implements SurfaceHolder.Callback, R
     public void surfaceCreated(SurfaceHolder surfaceHolder) {
         mIsDrawing = true;
         getHolder().setFormat(PixelFormat.TRANSLUCENT);
+        getCirclePoint(getWidth() / 2 - (getWidth() / 7), getWidth() / 2, getHeight() / 2);
         //setZOrderOnTop(true);
         new Thread(this).start();
     }
+
+
+    //获取圆周点坐标
+    private void getCirclePoint(int circleR, double circleX, double circleY) {
+        circlePointList.clear();
+        for (int i = -180; i < 180; i = i + 2) {
+            double x = 0, y = 0;
+            if (i == -180) {
+                x = -circleR;
+                y = 0;
+            } else if (i == -90) {
+                x = 0;
+                y = -circleR;
+            } else if (i == 0) {
+                x = circleR;
+                y = 0;
+            } else if (i == 90) {
+                x = 0;
+                y = circleR;
+            } else {
+                y = (Math.sin(i) * circleR);
+                x = (Math.cos(i) * circleR);
+            }
+            Log.e("获取圆周点坐标", "x：" + x + "，y：" + y + "，angle：" + i);
+
+            circlePointList.add(new Point((int) x + (int) circleX, (int) y + (int) circleY));
+        }
+
+    }
+
 
     @Override
     public void surfaceChanged(SurfaceHolder surfaceHolder, int i, int i1, int i2) {
@@ -100,33 +139,51 @@ public class JinyunView extends SurfaceView implements SurfaceHolder.Callback, R
         }
     }
 
-
     private void drawSomething() {
-        Canvas mCanvas = null;
+        Canvas canvas = null;
         long t = System.currentTimeMillis();
         try {
-            mCanvas = mSurfaceHolder.lockCanvas();
-            mCanvas.drawColor(0, PorterDuff.Mode.CLEAR);
+            canvas = mSurfaceHolder.lockCanvas();
+            canvas.drawColor(0, PorterDuff.Mode.CLEAR);
             if (bitmapBg != null) {
-                mCanvas.drawBitmap(bitmapBg, 0, 0, new Paint());
+                canvas.drawBitmap(bitmapBg, 0, 0, new Paint());
             }
             manageTriangle((int) (refreshTime * moveSpeed));
             for (Triangle triangle : triangleList) {
-                drawTriangle(mCanvas, triangle, mPaintColor);
+                drawTriangle(canvas, triangle, mPaintColor);
             }
+            drawCircleLine(canvas);
         } catch (Exception e) {
 
         } finally {
-            if (mCanvas != null) {
-                mSurfaceHolder.unlockCanvasAndPost(mCanvas);
+            if (canvas != null) {
+                mSurfaceHolder.unlockCanvasAndPost(canvas);
             }
             SystemClock.sleep(Math.max(refreshTime - (System.currentTimeMillis() - t), 0));
+        }
+    }
+
+    //画线
+    private void drawCircleLine(Canvas canvas) {
+        int size = circlePointList.size();
+        Paint paint = new Paint();
+        paint.setAntiAlias(true);
+        paint.setColor(mPaintColor);
+        paint.setStrokeWidth(6);
+        for (int i = 0; i < size; i++) {
+            Point point = circlePointList.get(i);
+            canvas.drawPoint(point.x, point.y, paint);
         }
     }
 
     private static Long startTime = System.currentTimeMillis();
 
 
+    /**
+     * 三角形控制
+     *
+     * @param distence
+     */
     private void manageTriangle(int distence) {
 
         Iterator iter = triangleList.iterator();
@@ -146,10 +203,16 @@ public class JinyunView extends SurfaceView implements SurfaceHolder.Callback, R
             startTime = System.currentTimeMillis();
         }
 
-
     }
 
 
+    /**
+     * 画三角形
+     *
+     * @param canvas
+     * @param triangle
+     * @param color
+     */
     public void drawTriangle(Canvas canvas, Triangle triangle, int color) {
         Paint paint = new Paint();
         paint.setAntiAlias(true);
