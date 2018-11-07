@@ -71,8 +71,6 @@ public class MainActivity extends AppCompatActivity {
         objectAnimator.setInterpolator(new LinearInterpolator());
         objectAnimator.setRepeatCount(-1);
         objectAnimator.start();
-
-
     }
 
 
@@ -84,7 +82,6 @@ public class MainActivity extends AppCompatActivity {
 
 
         ColorMatrix colorMatrix = new ColorMatrix();
-        //colorMatrix.setSaturation(0);
         colorMatrix.setScale(0.5f,0.5f,0.5f,1);
         ColorMatrixColorFilter colorFilter = new ColorMatrixColorFilter(colorMatrix);
         iv_bg.setColorFilter(colorFilter);

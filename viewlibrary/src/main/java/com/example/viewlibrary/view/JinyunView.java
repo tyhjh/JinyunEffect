@@ -7,7 +7,6 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.PixelFormat;
-import android.graphics.Point;
 import android.graphics.PorterDuff;
 import android.os.SystemClock;
 import android.util.AttributeSet;
@@ -160,8 +159,46 @@ public class JinyunView extends SurfaceView implements SurfaceHolder.Callback, R
         paint.setStyle(Paint.Style.STROKE);
         paint.setStrokeWidth(5);
 
+
+        for (int i = 0; i < size; i++) {
+            if (i == 50) {
+                circlePointList.get(i).move(4);
+                circlePointList.get(i + 1).move(18);
+                circlePointList.get(i + 2).move(26);
+                circlePointList.get(i + 3).move(31);
+                circlePointList.get(i + 4).move(44);
+                circlePointList.get(i + 5).move(49);
+                circlePointList.get(i + 6).move(53);
+                circlePointList.get(i + 7).move(57);
+                circlePointList.get(i + 8).move(58);
+                circlePointList.get(i + 9).move(56);
+                circlePointList.get(i + 10).move(53);
+                circlePointList.get(i + 11).move(39);
+                circlePointList.get(i + 12).move(20);
+                circlePointList.get(i + 13).move(1);
+            }
+
+            if (i == 70) {
+                circlePointList.get(i).move(4);
+                circlePointList.get(i + 1).move(10);
+                circlePointList.get(i + 2).move(20);
+                circlePointList.get(i + 2).move(30);
+                circlePointList.get(i + 3).move(37);
+                circlePointList.get(i + 4).move(40);
+                circlePointList.get(i + 5).move(45);
+                circlePointList.get(i + 6).move(41);
+                circlePointList.get(i + 7).move(40);
+                circlePointList.get(i + 8).move(39);
+                circlePointList.get(i + 9).move(26);
+                circlePointList.get(i + 10).move(16);
+            }
+
+        }
+
+
         for (int i = 0; i < size; i++) {
             CirclePoint point = circlePointList.get(i);
+
             CirclePoint next;
             if (i < size - 1) {
                 next = circlePointList.get(i + 1);
@@ -172,12 +209,23 @@ public class JinyunView extends SurfaceView implements SurfaceHolder.Callback, R
 
             Path path = new Path();
             path.moveTo(point.x, point.y);
-            Point bezierPoint = point.getBezierPoint();
-            path.quadTo(bezierPoint.x, bezierPoint.y, next.x, next.y);
+            //Point bezierPoint = point.getBezierPoint((int)point.circleR);
+            //path.quadTo(bezierPoint.x, bezierPoint.y, next.x, next.y);
+            path.lineTo(next.x, next.y);
             canvas.drawPath(path, paint);
 
             path.reset();
+            path.moveTo(point.x, point.y);
+            path.lineTo(point.x2, point.y2);
+            canvas.drawPath(path, paint);
+
+            //Point bezierPoint2 = point.getBezierPoint((int) ((point.circleRNow2 + next.circleRNow2) / 2));
+            path.reset();
             path.moveTo(point.x2, point.y2);
+            //path.quadTo(bezierPoint2.x, bezierPoint2.y, next.x2, next.y2);
+            path.lineTo(next.x2, next.y2);
+            canvas.drawPath(path, paint);
+
 
         }
     }

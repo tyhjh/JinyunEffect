@@ -14,29 +14,39 @@ public class CirclePoint {
     public int angle;
     public double circleR, circleX, circleY;
 
+    public double circleRNow1, circleRNow2;
+
     public CirclePoint(int angle, double circleR, double circleX, double circleY) {
         this.angle = angle;
         this.circleR = circleR;
         this.circleX = circleX;
         this.circleY = circleY;
-        Point point = getPoint(angle);
+        circleRNow1 = circleR;
+        circleRNow2 = circleR;
+        Point point = getPoint(angle, circleR);
         x = point.x;
         y = point.y;
         x2 = x;
         y2 = y;
-    }
-
-
-    public void move() {
 
     }
 
-    public Point getBezierPoint() {
-        return getPoint(angle + 1);
+    public void move(int distance) {
+        circleRNow1 = circleR + distance;
+        circleRNow2 = circleR - distance;
+        Point point = getPoint(angle, circleR + distance);
+        x = point.x;
+        y = point.y;
+        Point point2 = getPoint(angle, circleR - distance);
+        x2 = point2.x;
+        y2 = point2.y;
     }
 
+    public Point getBezierPoint(int circleR) {
+        return getPoint(angle + 1, circleR);
+    }
 
-    public Point getPoint(int angle) {
+    public Point getPoint(int angle, double circleR) {
         double x = 0, y = 0;
         if (angle == -180) {
             x = -circleR;
