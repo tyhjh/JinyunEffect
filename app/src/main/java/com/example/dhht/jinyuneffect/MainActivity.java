@@ -143,7 +143,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-
     private Visualizer.OnDataCaptureListener dataCaptureListener = new Visualizer.OnDataCaptureListener() {
         @Override
         public void onWaveFormDataCapture(Visualizer visualizer, final byte[] waveform, int samplingRate) {

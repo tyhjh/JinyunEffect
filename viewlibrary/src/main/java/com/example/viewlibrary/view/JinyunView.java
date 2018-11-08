@@ -7,6 +7,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.PixelFormat;
+import android.graphics.Point;
 import android.graphics.PorterDuff;
 import android.os.SystemClock;
 import android.util.AttributeSet;
@@ -25,19 +26,19 @@ import java.util.List;
 public class JinyunView extends SurfaceView implements SurfaceHolder.Callback, Runnable {
 
     //三角形移动速度
-    private double moveSpeed = 0.4;
+    private double moveSpeed = 0.2;
 
     //刷新时间
     private static int refreshTime = 20;
 
     //添加两次三角形的间隔
-    private static int addTriangleInterval = 100;
+    private static int addTriangleInterval = 50;
 
     //每次添加的数量限制
-    private static int addTriangleOnece = 2;
+    private static int addTriangleOnece = 1;
 
     //总三角形数量
-    private int allTriangleCount = 100;
+    private int allTriangleCount = 500;
     //所有的三角形
     private static List<Triangle> triangleList = new ArrayList<>();
 
@@ -53,8 +54,19 @@ public class JinyunView extends SurfaceView implements SurfaceHolder.Callback, R
     private int mCircleLineMargin;
 
 
+    //音谱数量
+    private static final int LUMP_COUNT = 120;
+    //取样间隔
+    private static final int WAVE_SAMPLING_INTERVAL = 5;
+    private static final int LUMP_SPACE = 1;
+    private List<Point> pointList = new ArrayList<>();
+    private static double ratio = 1.2;
+
+
     //画音频线
     private byte[] mBytes;
+
+
     private float[] mPoints;
     private Paint mPaint;
 
@@ -115,7 +127,7 @@ public class JinyunView extends SurfaceView implements SurfaceHolder.Callback, R
     //获取圆周点坐标
     private void getCirclePoint(double circleR, double circleX, double circleY) {
         circlePointList.clear();
-        for (int i = -180; i < 180; i = i + 2) {
+        for (int i = -180; i < 180; i = i + 3) {
             circlePointList.add(new CirclePoint(i, circleR, circleX, circleY));
         }
     }
@@ -147,10 +159,10 @@ public class JinyunView extends SurfaceView implements SurfaceHolder.Callback, R
             if (bitmapBg != null) {
                 canvas.drawBitmap(bitmapBg, 0, 0, new Paint());
             }
-            manageTriangle((int) (refreshTime * moveSpeed), canvas);
             //drawAudioLine(canvas);
-            drawAudioCircleLine(canvas);
-            //drawCircleLine(canvas);
+            //drawAudioCircleLine(canvas);
+            drawCircleLine(canvas);
+            //manageTriangle((int) ((System.currentTimeMillis() - t) * moveSpeed), canvas);
         } catch (Exception e) {
 
         } finally {
@@ -178,7 +190,7 @@ public class JinyunView extends SurfaceView implements SurfaceHolder.Callback, R
             mPoints[i * 4] = getWidth() * i / pointSize;
             mPoints[i * 4 + 1] = getHeight() / 2;
             mPoints[i * 4 + 2] = getWidth() * i / pointSize;
-            mPoints[i * 4 + 3] = 2 + getHeight() / 2 -mBytes[i];
+            mPoints[i * 4 + 3] = 2 + getHeight() / 2 - mBytes[i];
 
 
         }
@@ -187,7 +199,7 @@ public class JinyunView extends SurfaceView implements SurfaceHolder.Callback, R
 
 
     //画音频曲线
-    private void drawAudioCircleLine(Canvas canvas){
+    private void drawAudioCircleLine(Canvas canvas) {
         // 如果point数组还未初始化
         if (mPoints == null || mPoints.length < mBytes.length * 4) {
             mPoints = new float[mBytes.length * 4];
@@ -198,7 +210,7 @@ public class JinyunView extends SurfaceView implements SurfaceHolder.Callback, R
             mPoints[i * 4] = getWidth() * i / (mBytes.length - 1);
             // 根据bytes[i]的值（波形点的值）计算第i个点的y坐标
             mPoints[i * 4 + 1] = getHeight() / 2
-                    + ((byte) (mBytes[i] + 128)) * (getHeight()/ 2) / 128;
+                    + ((byte) (mBytes[i] + 128)) * (getHeight() / 2) / 128;
             // 计算第i+1个点的x坐标
             mPoints[i * 4 + 2] = getWidth() * (i + 1) / (mBytes.length - 1);
             // 根据bytes[i+1]的值（波形点的值）计算第i+1个点的y坐标
@@ -209,45 +221,42 @@ public class JinyunView extends SurfaceView implements SurfaceHolder.Callback, R
         canvas.drawLines(mPoints, mPaint);
     }
 
+
+    Path wavePath = new Path();
+    Path wavePath2 = new Path();
+
     //画线
     private void drawCircleLine(Canvas canvas) {
         int size = circlePointList.size();
-        Paint paint = new Paint();
-        paint.setAntiAlias(true);
-        paint.setColor(mPaintColor);
-        paint.setStyle(Paint.Style.STROKE);
-        paint.setStrokeWidth(5);
-
-
+        wavePath.reset();
+        wavePath2.reset();
         for (int i = 0; i < size; i++) {
             CirclePoint point = circlePointList.get(i);
-
-            CirclePoint next;
+            CirclePoint nextPoint;
             if (i < size - 1) {
-                next = circlePointList.get(i + 1);
+                nextPoint = circlePointList.get(i + 1);
+                nextPoint.move((int) (mBytes[i + 1] * ratio));
             } else {
-                next = circlePointList.get(0);
+                nextPoint = circlePointList.get(0);
             }
+            int midX = (point.x + nextPoint.x) >> 1;
 
+            int midX2 = (point.x2 + nextPoint.x2) >> 1;
 
-            Path path = new Path();
-            path.moveTo(point.x, point.y);
-            //Point bezierPoint = point.getBezierPoint((int)point.circleR);
-            //path.quadTo(bezierPoint.x, bezierPoint.y, next.x, next.y);
-            path.lineTo(next.x, next.y);
-            canvas.drawPath(path, paint);
-
-            path.reset();
-            path.moveTo(point.x, point.y);
-            path.lineTo(point.x2, point.y2);
-            canvas.drawPath(path, paint);
-
-            //Point bezierPoint2 = point.getBezierPoint((int) ((point.circleRNow2 + next.circleRNow2) / 2));
-            path.reset();
-            path.moveTo(point.x2, point.y2);
-            //path.quadTo(bezierPoint2.x, bezierPoint2.y, next.x2, next.y2);
-            path.lineTo(next.x2, next.y2);
-            canvas.drawPath(path, paint);
+            if (i == 0) {
+                point.move((int) (mBytes[i] * ratio));
+                wavePath.moveTo(point.x, point.y);
+                wavePath2.moveTo(point.x2, point.y2);
+            } else if (i < size - 1) {
+                wavePath.cubicTo(midX, point.y, midX, nextPoint.y, nextPoint.x, (nextPoint.y));
+                wavePath2.cubicTo(midX2, point.y2, midX2, nextPoint.y2, nextPoint.x2, (nextPoint.y2));
+                canvas.drawLine(point.x, point.y, point.x2, point.y2, mPaint);
+            } else {
+                wavePath.close();
+                wavePath2.close();
+            }
+            canvas.drawPath(wavePath, mPaint);
+            canvas.drawPath(wavePath2, mPaint);
         }
     }
 
@@ -302,6 +311,39 @@ public class JinyunView extends SurfaceView implements SurfaceHolder.Callback, R
         canvas.drawPath(path, paint);
     }
 
+
+    /**
+     * 预处理数据
+     *
+     * @return
+     */
+    private static byte[] readyData(byte[] fft) {
+        byte[] newData = new byte[LUMP_COUNT];
+        byte abs;
+        int max = 0;
+        for (int i = 0; i < LUMP_COUNT; i = i + LUMP_SPACE) {
+            abs = (byte) Math.abs(fft[i * WAVE_SAMPLING_INTERVAL]);
+            //Log.e("abs：",abs+"");
+            //描述：Math.abs -128时越界
+            int x = abs < 0 ? 127 : abs;
+            x = Math.abs((byte) (x - 127));
+            if (x < 0)
+                x = 0;
+
+            if (x > max) {
+                max = x;
+            }
+            newData[i] = (byte) (x);
+        }
+
+        if (max > 50)
+            ratio = 30 / max;
+        else
+            ratio = 1;
+        return newData;
+    }
+
+
     public int getAlpha(Triangle triangle) {
         double distence1 = Math.sqrt(Math.pow((triangle.topPoint1.x - getWidth() / 2), 2) + Math.pow((triangle.topPoint1.y - getHeight() / 2), 2));
         double distence2 = Math.sqrt(Math.pow((triangle.topPoint2.x - getWidth() / 2), 2) + Math.pow((triangle.topPoint2.y - getHeight() / 2), 2));
@@ -332,6 +374,9 @@ public class JinyunView extends SurfaceView implements SurfaceHolder.Callback, R
     }
 
     public void setmBytes(byte[] mBytes) {
-        this.mBytes = mBytes;
+        this.mBytes = readyData(mBytes);
+
     }
+
+
 }

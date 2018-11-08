@@ -16,6 +16,8 @@ public class CirclePoint {
 
     public double circleRNow1, circleRNow2;
 
+
+
     public CirclePoint(int angle, double circleR, double circleX, double circleY) {
         this.angle = angle;
         this.circleR = circleR;
@@ -41,6 +43,7 @@ public class CirclePoint {
         x2 = point2.x;
         y2 = point2.y;
     }
+
 
     public Point getBezierPoint(int circleR) {
         return getPoint(angle + 1, circleR);
