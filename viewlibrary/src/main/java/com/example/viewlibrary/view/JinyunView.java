@@ -10,6 +10,7 @@ import android.graphics.PixelFormat;
 import android.graphics.PorterDuff;
 import android.os.SystemClock;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
@@ -52,6 +53,12 @@ public class JinyunView extends SurfaceView implements SurfaceHolder.Callback, R
     private int mCircleLineMargin;
 
 
+    //画音频线
+    private byte[] mBytes;
+    private float[] mPoints;
+    private Paint mPaint;
+
+
     private SurfaceHolder mSurfaceHolder;
 
     private boolean mIsDrawing;
@@ -85,6 +92,11 @@ public class JinyunView extends SurfaceView implements SurfaceHolder.Callback, R
         setFocusable(true);
         setKeepScreenOn(true);
         setFocusableInTouchMode(true);
+        mPaint = new Paint();
+        mPaint.setAntiAlias(true);
+        mPaint.setColor(mPaintColor);
+        mPaint.setStyle(Paint.Style.STROKE);
+        mPaint.setStrokeWidth(5);
     }
 
     @Override
@@ -135,11 +147,10 @@ public class JinyunView extends SurfaceView implements SurfaceHolder.Callback, R
             if (bitmapBg != null) {
                 canvas.drawBitmap(bitmapBg, 0, 0, new Paint());
             }
-            manageTriangle((int) (refreshTime * moveSpeed));
-            for (Triangle triangle : triangleList) {
-                drawTriangle(canvas, triangle, mPaintColor);
-            }
-            drawCircleLine(canvas);
+            manageTriangle((int) (refreshTime * moveSpeed), canvas);
+            //drawAudioLine(canvas);
+            drawAudioCircleLine(canvas);
+            //drawCircleLine(canvas);
         } catch (Exception e) {
 
         } finally {
@@ -150,6 +161,54 @@ public class JinyunView extends SurfaceView implements SurfaceHolder.Callback, R
         }
     }
 
+    public static int pointSize = 180;
+
+    //画音频线
+    private void drawAudioLine(Canvas canvas) {
+
+        if (mPoints == null || mPoints.length < mBytes.length * 4) {
+            mPoints = new float[mBytes.length * 4];
+        }
+
+        for (int i = 1; i < pointSize; i++) {
+            if (mBytes[i] < 0) {
+                mBytes[i] = 127;
+            }
+
+            mPoints[i * 4] = getWidth() * i / pointSize;
+            mPoints[i * 4 + 1] = getHeight() / 2;
+            mPoints[i * 4 + 2] = getWidth() * i / pointSize;
+            mPoints[i * 4 + 3] = 2 + getHeight() / 2 -mBytes[i];
+
+
+        }
+        canvas.drawLines(mPoints, mPaint);
+    }
+
+
+    //画音频曲线
+    private void drawAudioCircleLine(Canvas canvas){
+        // 如果point数组还未初始化
+        if (mPoints == null || mPoints.length < mBytes.length * 4) {
+            mPoints = new float[mBytes.length * 4];
+        }
+
+        for (int i = 0; i < mBytes.length - 1; i++) {
+            // 计算第i个点的x坐标
+            mPoints[i * 4] = getWidth() * i / (mBytes.length - 1);
+            // 根据bytes[i]的值（波形点的值）计算第i个点的y坐标
+            mPoints[i * 4 + 1] = getHeight() / 2
+                    + ((byte) (mBytes[i] + 128)) * (getHeight()/ 2) / 128;
+            // 计算第i+1个点的x坐标
+            mPoints[i * 4 + 2] = getWidth() * (i + 1) / (mBytes.length - 1);
+            // 根据bytes[i+1]的值（波形点的值）计算第i+1个点的y坐标
+            mPoints[i * 4 + 3] = getHeight() / 2
+                    + ((byte) (mBytes[i + 1] + 128)) * (getHeight() / 2) / 128;
+        }
+        // 绘制波形曲线
+        canvas.drawLines(mPoints, mPaint);
+    }
+
     //画线
     private void drawCircleLine(Canvas canvas) {
         int size = circlePointList.size();
@@ -158,42 +217,6 @@ public class JinyunView extends SurfaceView implements SurfaceHolder.Callback, R
         paint.setColor(mPaintColor);
         paint.setStyle(Paint.Style.STROKE);
         paint.setStrokeWidth(5);
-
-
-        for (int i = 0; i < size; i++) {
-            if (i == 50) {
-                circlePointList.get(i).move(4);
-                circlePointList.get(i + 1).move(18);
-                circlePointList.get(i + 2).move(26);
-                circlePointList.get(i + 3).move(31);
-                circlePointList.get(i + 4).move(44);
-                circlePointList.get(i + 5).move(49);
-                circlePointList.get(i + 6).move(53);
-                circlePointList.get(i + 7).move(57);
-                circlePointList.get(i + 8).move(58);
-                circlePointList.get(i + 9).move(56);
-                circlePointList.get(i + 10).move(53);
-                circlePointList.get(i + 11).move(39);
-                circlePointList.get(i + 12).move(20);
-                circlePointList.get(i + 13).move(1);
-            }
-
-            if (i == 70) {
-                circlePointList.get(i).move(4);
-                circlePointList.get(i + 1).move(10);
-                circlePointList.get(i + 2).move(20);
-                circlePointList.get(i + 2).move(30);
-                circlePointList.get(i + 3).move(37);
-                circlePointList.get(i + 4).move(40);
-                circlePointList.get(i + 5).move(45);
-                circlePointList.get(i + 6).move(41);
-                circlePointList.get(i + 7).move(40);
-                circlePointList.get(i + 8).move(39);
-                circlePointList.get(i + 9).move(26);
-                circlePointList.get(i + 10).move(16);
-            }
-
-        }
 
 
         for (int i = 0; i < size; i++) {
@@ -225,21 +248,17 @@ public class JinyunView extends SurfaceView implements SurfaceHolder.Callback, R
             //path.quadTo(bezierPoint2.x, bezierPoint2.y, next.x2, next.y2);
             path.lineTo(next.x2, next.y2);
             canvas.drawPath(path, paint);
-
-
         }
     }
 
     private static Long startTime = System.currentTimeMillis();
-
 
     /**
      * 三角形控制
      *
      * @param distence
      */
-    private void manageTriangle(int distence) {
-
+    private void manageTriangle(int distence, Canvas canvas) {
         Iterator iter = triangleList.iterator();
         while (iter.hasNext()) {
             Triangle triangle = (Triangle) iter.next();
@@ -248,6 +267,7 @@ public class JinyunView extends SurfaceView implements SurfaceHolder.Callback, R
             } else {
                 triangle.move(distence);
             }
+            drawTriangle(canvas, triangle, mPaintColor);
         }
 
         if (System.currentTimeMillis() - startTime > addTriangleInterval && triangleList.size() < allTriangleCount) {
@@ -256,7 +276,6 @@ public class JinyunView extends SurfaceView implements SurfaceHolder.Callback, R
             }
             startTime = System.currentTimeMillis();
         }
-
     }
 
 
@@ -309,5 +328,10 @@ public class JinyunView extends SurfaceView implements SurfaceHolder.Callback, R
 
     public void setmPaintColor(int mPaintColor) {
         this.mPaintColor = mPaintColor;
+        mPaint.setColor(mPaintColor);
+    }
+
+    public void setmBytes(byte[] mBytes) {
+        this.mBytes = mBytes;
     }
 }

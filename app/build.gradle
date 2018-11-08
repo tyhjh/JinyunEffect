@@ -28,5 +28,6 @@ dependencies {
     implementation 'com.github.bumptech.glide:glide:4.8.0'
     annotationProcessor 'com.github.bumptech.glide:compiler:4.8.0'
     //implementation 'com.github.tyhjh:LogUtil:v1.0.4'
+    implementation 'com.github.tyhjh:PermissionUtil:v1.0.5'
     implementation project(':viewlibrary')
 }

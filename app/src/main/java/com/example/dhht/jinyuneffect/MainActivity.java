@@ -1,17 +1,25 @@
 package com.example.dhht.jinyuneffect;
 
+import android.Manifest;
 import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.ColorMatrix;
 import android.graphics.ColorMatrixColorFilter;
+import android.media.AudioManager;
+import android.media.AudioPlaybackConfiguration;
+import android.media.MediaPlayer;
+import android.media.audiofx.Visualizer;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.WindowManager;
 import android.view.animation.LinearInterpolator;
 import android.widget.ImageView;
@@ -21,17 +29,34 @@ import com.bumptech.glide.load.DataSource;
 import com.bumptech.glide.load.engine.GlideException;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
+import com.example.dhht.jinyuneffect.util.AudioVisualConverter;
 import com.example.viewlibrary.util.BlurUtil;
 import com.example.viewlibrary.util.ImageUtil;
 import com.example.viewlibrary.view.JinyunView;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.Locale;
+
+import permison.PermissonUtil;
+import permison.listener.PermissionListener;
+
+import static com.example.viewlibrary.view.JinyunView.pointSize;
 
 
 @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
 public class MainActivity extends AppCompatActivity {
 
+
+    String[] permissons = new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE,
+            Manifest.permission.RECORD_AUDIO};
+
     ImageView iv_bg, ivShowPic;
     ObjectAnimator objectAnimator;
     JinyunView jinyunView;
+
+
+    private Visualizer visualizer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,9 +65,21 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         initView();
         setBackground();
+        PermissonUtil.checkPermission(this, new PermissionListener() {
+            @Override
+            public void havePermission() {
+                initVisualizer();
+            }
+
+            @Override
+            public void requestPermissionFail() {
+
+            }
+        }, permissons);
     }
 
     private void initView() {
+        //palyMusic();
         jinyunView = findViewById(R.id.sv_bg);
         iv_bg = findViewById(R.id.iv_bg);
 
@@ -55,11 +92,10 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public boolean onResourceReady(Bitmap resource, Object model, Target<Bitmap> target, DataSource dataSource, boolean isFirstResource) {
-                jinyunView.setmPaintColor(ImageUtil.getColor(resource, 3).getRgb());
+                jinyunView.setmPaintColor(ImageUtil.getColor(resource, 1).getRgb());
                 return false;
             }
         }).load(R.mipmap.ic_show).into(ivShowPic);
-
 
 
         ivShowPic.setClipToOutline(true);
@@ -73,7 +109,6 @@ public class MainActivity extends AppCompatActivity {
         objectAnimator.start();
     }
 
-
     private void setBackground() {
         Bitmap bitmap = BlurUtil.doBlur(BitmapFactory.decodeResource(getResources(), R.mipmap.ic_show), 10, 30);
         iv_bg.setImageBitmap(bitmap);
@@ -82,7 +117,7 @@ public class MainActivity extends AppCompatActivity {
 
 
         ColorMatrix colorMatrix = new ColorMatrix();
-        colorMatrix.setScale(0.5f,0.5f,0.5f,1);
+        colorMatrix.setScale(0.7f, 0.7f, 0.7f, 1);
         ColorMatrixColorFilter colorFilter = new ColorMatrixColorFilter(colorMatrix);
         iv_bg.setColorFilter(colorFilter);
 
@@ -108,6 +143,41 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
+
+    private Visualizer.OnDataCaptureListener dataCaptureListener = new Visualizer.OnDataCaptureListener() {
+        @Override
+        public void onWaveFormDataCapture(Visualizer visualizer, final byte[] waveform, int samplingRate) {
+            jinyunView.setmBytes(waveform);
+        }
+
+        @Override
+        public void onFftDataCapture(Visualizer visualizer, final byte[] fft, int samplingRate) {
+
+           /* byte[] model = new byte[fft.length];
+            model[0] = (byte) Math.abs(fft[1]);
+            int j = 1;
+            for (int i = 2; i < pointSize; ) {
+                model[j] = (byte) Math.hypot(fft[i], fft[i + 1]);
+                i++;
+                j++;
+            }
+            jinyunView.setmBytes(model);*/
+        }
+    };
+
+    public void initVisualizer() {
+        visualizer = new Visualizer(0);
+        //采样的最大值
+        int captureSize = Visualizer.getCaptureSizeRange()[1];
+        //采样的频率
+        int captureRate = Visualizer.getMaxCaptureRate() * 3 / 4;
+        visualizer.setCaptureSize(captureSize);
+        visualizer.setDataCaptureListener(dataCaptureListener, captureRate, true, true);
+        visualizer.setScalingMode(Visualizer.SCALING_MODE_NORMALIZED);
+        visualizer.setEnabled(true);
+    }
+
+
     @Override
     protected void onResume() {
         super.onResume();
@@ -124,4 +194,5 @@ public class MainActivity extends AppCompatActivity {
             objectAnimator.pause();
         }
     }
+
 }
