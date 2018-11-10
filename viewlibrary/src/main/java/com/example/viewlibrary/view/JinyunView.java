@@ -11,12 +11,12 @@ import android.graphics.Point;
 import android.graphics.PorterDuff;
 import android.os.SystemClock;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
 import com.example.viewlibrary.other.CirclePoint;
 import com.example.viewlibrary.other.Triangle;
+import com.example.viewlibrary.util.DrawUtil;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -55,12 +55,12 @@ public class JinyunView extends SurfaceView implements SurfaceHolder.Callback, R
 
 
     //音谱数量
-    private static final int LUMP_COUNT = 120;
+    private static final int LUMP_COUNT = 180;
     //取样间隔
-    private static final int WAVE_SAMPLING_INTERVAL = 5;
+    private static final int WAVE_SAMPLING_INTERVAL = 1;
     private static final int LUMP_SPACE = 1;
     private List<Point> pointList = new ArrayList<>();
-    private static double ratio = 1.2;
+    private static double ratio = 1;
 
 
     //画音频线
@@ -127,7 +127,7 @@ public class JinyunView extends SurfaceView implements SurfaceHolder.Callback, R
     //获取圆周点坐标
     private void getCirclePoint(double circleR, double circleX, double circleY) {
         circlePointList.clear();
-        for (int i = -180; i < 180; i = i + 3) {
+        for (int i = -180; i < 180; i = i + 2) {
             circlePointList.add(new CirclePoint(i, circleR, circleX, circleY));
         }
     }
@@ -161,8 +161,9 @@ public class JinyunView extends SurfaceView implements SurfaceHolder.Callback, R
             }
             //drawAudioLine(canvas);
             //drawAudioCircleLine(canvas);
-            drawCircleLine(canvas);
-            //manageTriangle((int) ((System.currentTimeMillis() - t) * moveSpeed), canvas);
+            //drawCircleLine(canvas);
+            drawCircleLine2(canvas);
+            manageTriangle((int) ((System.currentTimeMillis() - t) * moveSpeed), canvas);
         } catch (Exception e) {
 
         } finally {
@@ -255,10 +256,60 @@ public class JinyunView extends SurfaceView implements SurfaceHolder.Callback, R
                 wavePath.close();
                 wavePath2.close();
             }
+            mPaint.setStrokeJoin(Paint.Join.ROUND);
             canvas.drawPath(wavePath, mPaint);
             canvas.drawPath(wavePath2, mPaint);
         }
     }
+
+
+    //画线
+    private void drawCircleLine2(Canvas canvas) {
+        int size = circlePointList.size();
+        wavePath.reset();
+        wavePath2.reset();
+
+        
+
+        DrawUtil.drawCurvesFromPoints(canvas,circlePointList,10,mPaintColor,5f);
+
+
+
+        /*for (int i = 0; i < size; i++) {
+            CirclePoint point = circlePointList.get(i);
+            CirclePoint nextPoint;
+            if (i < size - 1) {
+                nextPoint = circlePointList.get(i + 1);
+                nextPoint.move((int) (mBytes[i + 1] * ratio));
+            } else {
+                nextPoint = circlePointList.get(0);
+            }
+
+            if (i == 0) {
+                point.move((int) (mBytes[i] * ratio));
+                wavePath.moveTo(point.x, point.y);
+                wavePath2.moveTo(point.x2, point.y2);
+                canvas.drawLine(point.x, point.y, point.x2, point.y2, mPaint);
+            } else if (i <= size - 1) {
+                wavePath.lineTo(nextPoint.x, nextPoint.y);
+                wavePath2.lineTo(nextPoint.x2, nextPoint.y2);
+                canvas.drawLine(point.x, point.y, point.x2, point.y2, mPaint);
+            } else {
+                wavePath.close();
+                wavePath2.close();
+            }
+        }*/
+
+
+
+
+        //mPaint.setStrokeJoin(Paint.Join.ROUND);
+       /* CornerPathEffect cornerPathEffect = new CornerPathEffect(130);
+        mPaint.setPathEffect(cornerPathEffect);
+        canvas.drawPath(wavePath, mPaint);
+        canvas.drawPath(wavePath2, mPaint);*/
+    }
+
 
     private static Long startTime = System.currentTimeMillis();
 
@@ -312,34 +363,30 @@ public class JinyunView extends SurfaceView implements SurfaceHolder.Callback, R
     }
 
 
+
     /**
      * 预处理数据
      *
      * @return
      */
-    private static byte[] readyData(byte[] fft) {
+    private byte[] readyData(byte[] fft) {
+
         byte[] newData = new byte[LUMP_COUNT];
         byte abs;
-        int max = 0;
+
+
         for (int i = 0; i < LUMP_COUNT; i = i + LUMP_SPACE) {
             abs = (byte) Math.abs(fft[i * WAVE_SAMPLING_INTERVAL]);
-            //Log.e("abs：",abs+"");
             //描述：Math.abs -128时越界
             int x = abs < 0 ? 127 : abs;
             x = Math.abs((byte) (x - 127));
-            if (x < 0)
-                x = 0;
-
-            if (x > max) {
-                max = x;
+            if(x<0){
+                x=0;
             }
             newData[i] = (byte) (x);
         }
 
-        if (max > 50)
-            ratio = 30 / max;
-        else
-            ratio = 1;
+
         return newData;
     }
 
@@ -374,7 +421,7 @@ public class JinyunView extends SurfaceView implements SurfaceHolder.Callback, R
     }
 
     public void setmBytes(byte[] mBytes) {
-        this.mBytes = readyData(mBytes);
+        this.mBytes=mBytes;
 
     }
 

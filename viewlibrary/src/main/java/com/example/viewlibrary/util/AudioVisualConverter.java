@@ -1,4 +1,4 @@
-package com.example.dhht.jinyuneffect.util;
+package com.example.viewlibrary.util;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -10,7 +10,7 @@ public class AudioVisualConverter {
 
     private static final String TAG = AudioVisualConverter.class.getSimpleName();
 
-    private static final int MAX_SIZE = 128;
+    private static final int MAX_SIZE = 180;
 
     public AudioVisualConverter() {
     }
@@ -201,7 +201,7 @@ public class AudioVisualConverter {
             }
         }
         byte value = (byte) (max * 2);
-        maxValueMap.put(maxPosition, value <= 0 ? MAX_SIZE - 1 : value);
+        maxValueMap.put(maxPosition, value <= 0 ? (byte) (MAX_SIZE - 1) : value);
 
 
         Iterator<Map.Entry<Integer, Byte>> iterator = maxValueMap.entrySet().iterator();

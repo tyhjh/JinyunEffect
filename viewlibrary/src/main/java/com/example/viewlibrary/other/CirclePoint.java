@@ -9,8 +9,8 @@ import android.graphics.Point;
  * description：
  */
 
-public class CirclePoint {
-    public int x, y, x2, y2;
+public class CirclePoint extends Point{
+    public int x2, y2;
     public int angle;
     public double circleR, circleX, circleY;
 
