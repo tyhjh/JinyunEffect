@@ -7,7 +7,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.PixelFormat;
-import android.graphics.Point;
+import android.graphics.PointF;
 import android.graphics.PorterDuff;
 import android.os.SystemClock;
 import android.util.AttributeSet;
@@ -25,6 +25,7 @@ import java.util.List;
 
 public class JinyunView extends SurfaceView implements SurfaceHolder.Callback, Runnable {
 
+    private static final double SMOOTHNESS = 0.4;
     //三角形移动速度
     private double moveSpeed = 0.2;
 
@@ -59,7 +60,6 @@ public class JinyunView extends SurfaceView implements SurfaceHolder.Callback, R
     //取样间隔
     private static final int WAVE_SAMPLING_INTERVAL = 1;
     private static final int LUMP_SPACE = 1;
-    private List<Point> pointList = new ArrayList<>();
     private static double ratio = 1;
 
 
@@ -165,7 +165,7 @@ public class JinyunView extends SurfaceView implements SurfaceHolder.Callback, R
             drawCircleLine2(canvas);
             manageTriangle((int) ((System.currentTimeMillis() - t) * moveSpeed), canvas);
         } catch (Exception e) {
-
+            e.printStackTrace();
         } finally {
             if (canvas != null) {
                 mSurfaceHolder.unlockCanvasAndPost(canvas);
@@ -223,6 +223,7 @@ public class JinyunView extends SurfaceView implements SurfaceHolder.Callback, R
     }
 
 
+    Path mPath = new Path();
     Path wavePath = new Path();
     Path wavePath2 = new Path();
 
@@ -265,49 +266,13 @@ public class JinyunView extends SurfaceView implements SurfaceHolder.Callback, R
 
     //画线
     private void drawCircleLine2(Canvas canvas) {
-        int size = circlePointList.size();
+
         wavePath.reset();
         wavePath2.reset();
-
-        
-
-        DrawUtil.drawCurvesFromPoints(canvas,circlePointList,10,mPaintColor,5f);
-
-
-
-        /*for (int i = 0; i < size; i++) {
-            CirclePoint point = circlePointList.get(i);
-            CirclePoint nextPoint;
-            if (i < size - 1) {
-                nextPoint = circlePointList.get(i + 1);
-                nextPoint.move((int) (mBytes[i + 1] * ratio));
-            } else {
-                nextPoint = circlePointList.get(0);
-            }
-
-            if (i == 0) {
-                point.move((int) (mBytes[i] * ratio));
-                wavePath.moveTo(point.x, point.y);
-                wavePath2.moveTo(point.x2, point.y2);
-                canvas.drawLine(point.x, point.y, point.x2, point.y2, mPaint);
-            } else if (i <= size - 1) {
-                wavePath.lineTo(nextPoint.x, nextPoint.y);
-                wavePath2.lineTo(nextPoint.x2, nextPoint.y2);
-                canvas.drawLine(point.x, point.y, point.x2, point.y2, mPaint);
-            } else {
-                wavePath.close();
-                wavePath2.close();
-            }
-        }*/
-
-
-
-
-        //mPaint.setStrokeJoin(Paint.Join.ROUND);
-       /* CornerPathEffect cornerPathEffect = new CornerPathEffect(130);
-        mPaint.setPathEffect(cornerPathEffect);
-        canvas.drawPath(wavePath, mPaint);
-        canvas.drawPath(wavePath2, mPaint);*/
+        for (int i = 0; i < circlePointList.size(); i++) {
+            circlePointList.get(i).move(mBytes[i]);
+        }
+        DrawUtil.drawCurvesFromPoints(canvas, circlePointList, 0.4, mPaintColor, 5f);
     }
 
 
@@ -364,32 +329,6 @@ public class JinyunView extends SurfaceView implements SurfaceHolder.Callback, R
 
 
 
-    /**
-     * 预处理数据
-     *
-     * @return
-     */
-    private byte[] readyData(byte[] fft) {
-
-        byte[] newData = new byte[LUMP_COUNT];
-        byte abs;
-
-
-        for (int i = 0; i < LUMP_COUNT; i = i + LUMP_SPACE) {
-            abs = (byte) Math.abs(fft[i * WAVE_SAMPLING_INTERVAL]);
-            //描述：Math.abs -128时越界
-            int x = abs < 0 ? 127 : abs;
-            x = Math.abs((byte) (x - 127));
-            if(x<0){
-                x=0;
-            }
-            newData[i] = (byte) (x);
-        }
-
-
-        return newData;
-    }
-
 
     public int getAlpha(Triangle triangle) {
         double distence1 = Math.sqrt(Math.pow((triangle.topPoint1.x - getWidth() / 2), 2) + Math.pow((triangle.topPoint1.y - getHeight() / 2), 2));
@@ -421,9 +360,12 @@ public class JinyunView extends SurfaceView implements SurfaceHolder.Callback, R
     }
 
     public void setmBytes(byte[] mBytes) {
-        this.mBytes=mBytes;
+        this.mBytes = mBytes;
 
     }
+
+    List<PointF> mControlPointList = new ArrayList<>();
+
 
 
 }

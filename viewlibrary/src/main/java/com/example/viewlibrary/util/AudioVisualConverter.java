@@ -201,7 +201,7 @@ public class AudioVisualConverter {
             }
         }
         byte value = (byte) (max * 2);
-        maxValueMap.put(maxPosition, value <= 0 ? (byte) (MAX_SIZE - 1) : value);
+        //maxValueMap.put(maxPosition, value <= 0 ? (byte) (MAX_SIZE - 1) : value);
 
 
         Iterator<Map.Entry<Integer, Byte>> iterator = maxValueMap.entrySet().iterator();

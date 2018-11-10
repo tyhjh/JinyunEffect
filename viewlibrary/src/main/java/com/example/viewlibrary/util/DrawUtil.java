@@ -14,16 +14,16 @@ public class DrawUtil {
     /**
      * 绘制穿过多边形顶点的平滑曲线
      * 用三阶贝塞尔曲线实现
-     * @param canvas 画布
-     * @param points 多边形的顶点
-     * @param k 控制点系数，系数越小，曲线越锐利
-     * @param color 线条颜色
+     *
+     * @param canvas      画布
+     * @param points      多边形的顶点
+     * @param k           控制点系数，系数越小，曲线越锐利
+     * @param color       线条颜色
      * @param strokeWidth 线条宽度
      */
     public static void drawCurvesFromPoints(Canvas canvas, List<CirclePoint> points, double k, int color, float strokeWidth) {
         int size = points.size();
         Paint paint = new Paint();
-
         // 计算中点
         Point[] midPoints = new Point[size];
         for (int i = 0; i < size; i++) {
@@ -65,7 +65,17 @@ public class DrawUtil {
         paint.setStrokeWidth(strokeWidth);
         paint.setStyle(Paint.Style.STROKE);
         for (int i = 0; i < size; i++) {
+
             Point startPoint = points.get(i);
+           /* if (i == size - 1) {
+                path.reset();
+                path.moveTo(startPoint.x, startPoint.y);
+                path.lineTo(points.get(0).x,points.get(0).y);
+                canvas.drawPath(path, paint);
+                break;
+            }*/
+
+
             Point endPoint = points.get((i + 1) % size);
             Point controlPoint1 = controlPoints[(i * 2 + controlPoints.length - 1) % controlPoints.length];
             Point controlPoint2 = controlPoints[(i * 2) % controlPoints.length];
@@ -73,6 +83,9 @@ public class DrawUtil {
             path.moveTo(startPoint.x, startPoint.y);
             path.cubicTo(controlPoint1.x, controlPoint1.y, controlPoint2.x, controlPoint2.y, endPoint.x, endPoint.y);
             canvas.drawPath(path, paint);
+
+
+
         }
     }
 

@@ -8,7 +8,7 @@ import java.util.Random;
 
 public class Triangle {
 
-    public static int triangleSize = 35;
+    public static int triangleSize = 45;
     public Point topPoint1, topPoint2, topPoint3;
     public int moveAngle;
 

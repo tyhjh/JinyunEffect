@@ -14,7 +14,6 @@ public class CirclePoint extends Point{
     public int angle;
     public double circleR, circleX, circleY;
 
-    public double circleRNow1, circleRNow2;
 
 
 
@@ -23,8 +22,6 @@ public class CirclePoint extends Point{
         this.circleR = circleR;
         this.circleX = circleX;
         this.circleY = circleY;
-        circleRNow1 = circleR;
-        circleRNow2 = circleR;
         Point point = getPoint(angle, circleR);
         x = point.x;
         y = point.y;
@@ -34,8 +31,6 @@ public class CirclePoint extends Point{
     }
 
     public void move(int distance) {
-        circleRNow1 = circleR + distance;
-        circleRNow2 = circleR - distance;
         Point point = getPoint(angle, circleR + distance);
         x = point.x;
         y = point.y;
