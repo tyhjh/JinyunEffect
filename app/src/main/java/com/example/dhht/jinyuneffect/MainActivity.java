@@ -79,7 +79,7 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public boolean onResourceReady(Bitmap resource, Object model, Target<Bitmap> target, DataSource dataSource, boolean isFirstResource) {
-                jinyunView.setmPaintColor(ImageUtil.getColor(resource, 1).getRgb());
+                jinyunView.setmPaintColor(ImageUtil.getColor(resource, 3).getRgb());
                 return false;
             }
         }).load(R.mipmap.ic_show).into(ivShowPic);
