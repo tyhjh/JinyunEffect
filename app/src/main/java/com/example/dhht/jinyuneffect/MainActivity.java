@@ -28,6 +28,7 @@ import com.example.viewlibrary.util.BlurUtil;
 import com.example.viewlibrary.util.ImageUtil;
 import com.example.viewlibrary.view.JinyunView;
 
+import log.LogUtils;
 import permison.PermissonUtil;
 import permison.listener.PermissionListener;
 
@@ -141,15 +142,6 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onFftDataCapture(Visualizer visualizer, final byte[] fft, int samplingRate) {
 
-           /* byte[] model = new byte[fft.length];
-            model[0] = (byte) Math.abs(fft[1]);
-            int j = 1;
-            for (int i = 2; i < pointSize; ) {
-                model[j] = (byte) Math.hypot(fft[i], fft[i + 1]);
-                i++;
-                j++;
-            }
-            jinyunView.setmBytes(model);*/
         }
     };
 

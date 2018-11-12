@@ -1,6 +1,7 @@
 package com.example.viewlibrary.util;
 
 import android.graphics.Canvas;
+import android.graphics.CornerPathEffect;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Point;
@@ -18,12 +19,9 @@ public class DrawUtil {
      * @param canvas      画布
      * @param points      多边形的顶点
      * @param k           控制点系数，系数越小，曲线越锐利
-     * @param color       线条颜色
-     * @param strokeWidth 线条宽度
      */
-    public static void drawCurvesFromPoints(Canvas canvas, List<CirclePoint> points, double k, int color, float strokeWidth) {
+    public static void drawCurvesFromPoints(Canvas canvas, List<CirclePoint> points, double k, Paint paint) {
         int size = points.size();
-        Paint paint = new Paint();
         // 计算中点
         Point[] midPoints = new Point[size];
         for (int i = 0; i < size; i++) {
@@ -31,7 +29,6 @@ public class DrawUtil {
             Point p2 = points.get((i + 1) % size);
             midPoints[i] = new Point((p1.x + p2.x) / 2, (p1.y + p2.y) / 2);
         }
-
         // 计算比例点
         Point[] ratioPoints = new Point[size];
         for (int i = 0; i < size; i++) {
@@ -61,21 +58,9 @@ public class DrawUtil {
 
         // 用三阶贝塞尔曲线连接顶点
         Path path = new Path();
-        paint.setColor(color);
-        paint.setStrokeWidth(strokeWidth);
-        paint.setStyle(Paint.Style.STROKE);
+
         for (int i = 0; i < size; i++) {
-
             Point startPoint = points.get(i);
-           /* if (i == size - 1) {
-                path.reset();
-                path.moveTo(startPoint.x, startPoint.y);
-                path.lineTo(points.get(0).x,points.get(0).y);
-                canvas.drawPath(path, paint);
-                break;
-            }*/
-
-
             Point endPoint = points.get((i + 1) % size);
             Point controlPoint1 = controlPoints[(i * 2 + controlPoints.length - 1) % controlPoints.length];
             Point controlPoint2 = controlPoints[(i * 2) % controlPoints.length];
@@ -83,11 +68,19 @@ public class DrawUtil {
             path.moveTo(startPoint.x, startPoint.y);
             path.cubicTo(controlPoint1.x, controlPoint1.y, controlPoint2.x, controlPoint2.y, endPoint.x, endPoint.y);
             canvas.drawPath(path, paint);
-
-
-
         }
     }
+
+
+    public static void drawCicleLineFromTowPoints(Canvas canvas, Point point1, Point point2, Paint paint) {
+        CornerPathEffect cornerPathEffect = new CornerPathEffect(1);
+        paint.setPathEffect(cornerPathEffect);
+        Path path = new Path();
+        path.moveTo(point1.x, point1.y);
+        path.quadTo((point1.x + point2.x) / 2, (point1.y + point2.y) / 2, point2.x, point2.y);
+        canvas.drawPath(path, paint);
+    }
+
 
     /**
      * 计算两点之间的距离

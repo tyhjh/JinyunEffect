@@ -160,9 +160,7 @@ public class JinyunView extends SurfaceView implements SurfaceHolder.Callback, R
                 canvas.drawBitmap(bitmapBg, 0, 0, new Paint());
             }
             //drawAudioLine(canvas);
-            //drawAudioCircleLine(canvas);
-            //drawCircleLine(canvas);
-            drawCircleLine2(canvas);
+            drawCircleLine(canvas);
             manageTriangle((int) ((System.currentTimeMillis() - t) * moveSpeed), canvas);
         } catch (Exception e) {
             e.printStackTrace();
@@ -199,80 +197,31 @@ public class JinyunView extends SurfaceView implements SurfaceHolder.Callback, R
     }
 
 
-    //画音频曲线
-    private void drawAudioCircleLine(Canvas canvas) {
-        // 如果point数组还未初始化
-        if (mPoints == null || mPoints.length < mBytes.length * 4) {
-            mPoints = new float[mBytes.length * 4];
-        }
-
-        for (int i = 0; i < mBytes.length - 1; i++) {
-            // 计算第i个点的x坐标
-            mPoints[i * 4] = getWidth() * i / (mBytes.length - 1);
-            // 根据bytes[i]的值（波形点的值）计算第i个点的y坐标
-            mPoints[i * 4 + 1] = getHeight() / 2
-                    + ((byte) (mBytes[i] + 128)) * (getHeight() / 2) / 128;
-            // 计算第i+1个点的x坐标
-            mPoints[i * 4 + 2] = getWidth() * (i + 1) / (mBytes.length - 1);
-            // 根据bytes[i+1]的值（波形点的值）计算第i+1个点的y坐标
-            mPoints[i * 4 + 3] = getHeight() / 2
-                    + ((byte) (mBytes[i + 1] + 128)) * (getHeight() / 2) / 128;
-        }
-        // 绘制波形曲线
-        canvas.drawLines(mPoints, mPaint);
-    }
-
-
-    Path mPath = new Path();
     Path wavePath = new Path();
     Path wavePath2 = new Path();
 
+
     //画线
     private void drawCircleLine(Canvas canvas) {
-        int size = circlePointList.size();
-        wavePath.reset();
-        wavePath2.reset();
-        for (int i = 0; i < size; i++) {
-            CirclePoint point = circlePointList.get(i);
-            CirclePoint nextPoint;
-            if (i < size - 1) {
-                nextPoint = circlePointList.get(i + 1);
-                nextPoint.move((int) (mBytes[i + 1] * ratio));
-            } else {
-                nextPoint = circlePointList.get(0);
-            }
-            int midX = (point.x + nextPoint.x) >> 1;
-
-            int midX2 = (point.x2 + nextPoint.x2) >> 1;
-
-            if (i == 0) {
-                point.move((int) (mBytes[i] * ratio));
-                wavePath.moveTo(point.x, point.y);
-                wavePath2.moveTo(point.x2, point.y2);
-            } else if (i < size - 1) {
-                wavePath.cubicTo(midX, point.y, midX, nextPoint.y, nextPoint.x, (nextPoint.y));
-                wavePath2.cubicTo(midX2, point.y2, midX2, nextPoint.y2, nextPoint.x2, (nextPoint.y2));
-                canvas.drawLine(point.x, point.y, point.x2, point.y2, mPaint);
-            } else {
-                wavePath.close();
-                wavePath2.close();
-            }
-            mPaint.setStrokeJoin(Paint.Join.ROUND);
-            canvas.drawPath(wavePath, mPaint);
-            canvas.drawPath(wavePath2, mPaint);
-        }
-    }
-
-
-    //画线
-    private void drawCircleLine2(Canvas canvas) {
 
         wavePath.reset();
         wavePath2.reset();
-        for (int i = 0; i < circlePointList.size(); i++) {
-            circlePointList.get(i).move(mBytes[i]);
+        List<CirclePoint> circlePoints = new ArrayList<>();
+        for (int i = 0; i < circlePointList.size() - 1; i++) {
+            CirclePoint circlePoint = circlePointList.get(i);
+            circlePoint.move(mBytes[i]);
+            if (mBytes[i] == 0 && mBytes[i + 1] == 0) {
+                DrawUtil.drawCicleLineFromTowPoints(canvas, circlePoint, circlePointList.get(i + 1), mPaint);
+            } else {
+                circlePoints.add(circlePoint);
+                if (mBytes[i + 1] == 0) {
+                    circlePoints.add(circlePointList.get(i + 1));
+                    DrawUtil.drawCurvesFromPoints(canvas, circlePoints, 0.4, mPaint);
+                    circlePoints.clear();
+                }
+            }
         }
-        DrawUtil.drawCurvesFromPoints(canvas, circlePointList, 0.4, mPaintColor, 5f);
+        DrawUtil.drawCicleLineFromTowPoints(canvas, circlePointList.get(circlePointList.size()-1), circlePointList.get(0), mPaint);
     }
 
 
@@ -327,9 +276,6 @@ public class JinyunView extends SurfaceView implements SurfaceHolder.Callback, R
         canvas.drawPath(path, paint);
     }
 
-
-
-
     public int getAlpha(Triangle triangle) {
         double distence1 = Math.sqrt(Math.pow((triangle.topPoint1.x - getWidth() / 2), 2) + Math.pow((triangle.topPoint1.y - getHeight() / 2), 2));
         double distence2 = Math.sqrt(Math.pow((triangle.topPoint2.x - getWidth() / 2), 2) + Math.pow((triangle.topPoint2.y - getHeight() / 2), 2));
@@ -346,12 +292,6 @@ public class JinyunView extends SurfaceView implements SurfaceHolder.Callback, R
             }
             return (int) alpha;
         }
-
-       /* if (distence > getWidth() / 3) {
-
-        } else {
-            return 255;
-        }*/
     }
 
     public void setmPaintColor(int mPaintColor) {
@@ -363,9 +303,5 @@ public class JinyunView extends SurfaceView implements SurfaceHolder.Callback, R
         this.mBytes = mBytes;
 
     }
-
-    List<PointF> mControlPointList = new ArrayList<>();
-
-
 
 }

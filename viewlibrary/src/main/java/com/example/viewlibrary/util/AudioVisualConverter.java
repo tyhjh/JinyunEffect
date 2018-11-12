@@ -169,7 +169,7 @@ public class AudioVisualConverter {
                 maxIndex = i;
             } else {
                 if (value < last) {
-                    if (maxIndex - laseIndex > 16) {  //TODO:降低数据采样
+                    if (maxIndex - laseIndex > 26) {  //TODO:降低数据采样
                         maxValueMap.put(maxIndex, (byte) (max));
                         laseIndex = maxIndex;
                     }
